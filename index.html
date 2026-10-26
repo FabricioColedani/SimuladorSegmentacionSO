@@ -1,0 +1,321 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Simulador Interactivo de Segmentación - Sistemas Operativos</title>
+    <meta name="description" content="Simulador de segmentación de memoria para cursos de sistemas operativos." />
+    <link rel="stylesheet" href="styles.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="title-wrap">
+          <div class="kicker">
+            <i data-lucide="cpu" class="mini-icon"></i>
+            <span>Sistemas Operativos · Segmentación</span>
+          </div>
+          <h1>Simulador Interactivo de Segmentación</h1>
+        </div>
+
+        <button id="guideButton" type="button" class="utility-button">
+          <i data-lucide="book-open" class="icon"></i>
+          <span>¿Cómo usar el simulador?</span>
+        </button>
+      </header>
+
+      <nav class="tab-nav" aria-label="Navegación del simulador">
+        <button class="tab-button active" type="button" data-tab="memoria">
+          <i data-lucide="memory-stick" class="icon"></i>
+          <span>Memoria física</span>
+        </button>
+        <button class="tab-button" type="button" data-tab="traduccion">
+          <i data-lucide="calculator" class="icon"></i>
+          <span>Traducción</span>
+        </button>
+        <button class="tab-button" type="button" data-tab="comparativa">
+          <i data-lucide="shield-check" class="icon"></i>
+          <span>Protección</span>
+        </button>
+      </nav>
+
+      <main>
+        <section id="tab-memoria" class="tab-panel">
+          <div class="panel panel-grid">
+            <div>
+              <div class="section-header">
+                <div>
+                  <h2 class="section-title">Memoria física y fragmentación</h2>
+                  <p class="section-subtitle">Total disponible: 64 KB</p>
+                </div>
+                <button id="compactButton" type="button" class="primary-button">
+                  <i data-lucide="scan-line" class="icon"></i>
+                  <span>Compactar memoria</span>
+                </button>
+              </div>
+
+              <div class="stats-grid">
+                <div class="stat-card">
+                  <span class="stat-label">Total</span>
+                  <p class="stat-value">64 KB</p>
+                </div>
+                <div class="stat-card">
+                  <span class="stat-label">Ocupado</span>
+                  <p id="usedMemoryStat" class="stat-value" style="color:#7dd3fc;">0 KB</p>
+                </div>
+                <div class="stat-card">
+                  <span class="stat-label">Libre</span>
+                  <p id="freeMemoryStat" class="stat-value" style="color:#86efac;">64 KB</p>
+                </div>
+                <div class="stat-card">
+                  <span class="stat-label">Segmentos</span>
+                  <p id="segmentCountStat" class="stat-value" style="color:#fcd34d;">0</p>
+                </div>
+              </div>
+
+              <div class="memory-layout">
+                <div class="memory-viewport">
+                  <div class="memory-rail" id="memoryCanvas" aria-label="Visualización de la memoria física"></div>
+                </div>
+
+                <div>
+                  <div class="panel-compact">
+                    <h3 class="compact-title">Segmentos activos</h3>
+                    <div id="segmentList" class="segment-list"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <aside>
+              <div class="panel-compact">
+                <h2 class="section-title small-title">Crear y liberar</h2>
+
+                <form id="segmentForm" class="form-stack">
+                  <div class="field">
+                    <label for="segmentType">Tipo</label>
+                    <select id="segmentType">
+                      <option value="Código">Código</option>
+                      <option value="Datos">Datos</option>
+                      <option value="Pila">Pila</option>
+                      <option value="Tabla de Símbolos">Tabla de Símbolos</option>
+                    </select>
+                  </div>
+
+                  <div class="field">
+                    <label for="segmentName">Nombre</label>
+                    <input id="segmentName" type="text" value="Proceso_A" />
+                  </div>
+
+                  <div class="field">
+                    <label for="segmentSize">Tamaño (KB)</label>
+                    <input id="segmentSize" type="number" min="1" max="32" value="8" />
+                  </div>
+
+                  <div class="form-actions">
+                    <button type="submit" class="primary-button full-width">
+                      <i data-lucide="plus" class="icon"></i>
+                      <span>Crear segmento</span>
+                    </button>
+                  </div>
+                </form>
+
+                <div class="panel-compact nested-panel">
+                  <h3 class="compact-title">Eliminar segmento</h3>
+                  <div class="inline-action">
+                    <select id="deleteSegmentSelect"></select>
+                    <button id="deleteSegmentButton" type="button" class="secondary-button icon-button">
+                      <i data-lucide="trash-2" class="icon"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </aside>
+          </div>
+        </section>
+
+        <section id="tab-traduccion" class="tab-panel hidden">
+          <div class="panel panel-grid">
+            <div>
+              <div class="section-header">
+                <div>
+                  <h2 class="section-title">Tabla de segmentos</h2>
+                  <p class="section-subtitle">Edita base, tamaño y permisos para validar la traducción.</p>
+                </div>
+              </div>
+
+              <div class="table-shell">
+                <table class="segment-table">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Segmento</th>
+                      <th>Nombre</th>
+                      <th>Base</th>
+                      <th>Límite</th>
+                      <th>Permisos</th>
+                    </tr>
+                  </thead>
+                  <tbody id="segmentTableBody"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <aside>
+              <div class="panel-compact">
+                <h2 class="section-title small-title">Traducir dirección</h2>
+
+                <form id="translationForm" class="form-stack">
+                  <div class="field">
+                    <label for="segmentNumber">Número de segmento</label>
+                    <select id="segmentNumber"></select>
+                  </div>
+
+                  <div class="field">
+                    <label for="offsetInput">Desplazamiento (Offset)</label>
+                    <input id="offsetInput" type="number" min="0" value="6" />
+                  </div>
+
+                  <div class="form-actions">
+                    <button type="submit" class="secondary-button full-width accent-action">
+                      <i data-lucide="arrow-right-left" class="icon"></i>
+                      <span>Traducir dirección</span>
+                    </button>
+                  </div>
+                </form>
+
+                <div id="translationResult" class="result-panel">
+                  <p class="result-title">Resultado</p>
+                  <p class="result-text">Selecciona un segmento y calcula la dirección física.</p>
+                </div>
+              </div>
+            </aside>
+          </div>
+        </section>
+
+        <section id="tab-comparativa" class="tab-panel hidden">
+          <div class="panel">
+            <div class="section-header">
+              <h2 class="section-title">Comparativa y niveles de protección</h2>
+            </div>
+
+            <div class="card-grid">
+              <div class="info-card">
+                <h3 class="info-title cyan">Paginación</h3>
+                <ul>
+                  <li>La memoria se divide en páginas fijas.</li>
+                  <li>Las páginas virtuales se asignan a marcos físicos.</li>
+                  <li>Reduce la fragmentación interna.</li>
+                  <li>Es útil para sistemas con memoria virtual.</li>
+                </ul>
+              </div>
+
+              <div class="info-card">
+                <h3 class="info-title green">Segmentación</h3>
+                <ul>
+                  <li>La memoria se organiza por bloques lógicos del proceso.</li>
+                  <li>Cada segmento tiene base, tamaño y permisos propios.</li>
+                  <li>Es natural para código, datos, pila y tablas.</li>
+                  <li>La fragmentación externa aparece al liberar segmentos.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel extra-panel">
+            <div class="section-header">
+              <h2 class="section-title">Anillos de protección</h2>
+            </div>
+
+            <div class="ring-grid">
+              <div class="ring-card blue-ring">
+                <div class="ring-index cyan">0</div>
+                <h3 class="cyan">Kernel</h3>
+                <p>Acceso total a hardware y estructuras del sistema.</p>
+              </div>
+
+              <div class="ring-card indigo-ring">
+                <div class="ring-index indigo">1</div>
+                <h3 class="indigo">Drivers</h3>
+                <p>Permisos privilegiados para controladores y servicios.</p>
+              </div>
+
+              <div class="ring-card violet-ring">
+                <div class="ring-index violet">2</div>
+                <h3 class="violet">Servicios</h3>
+                <p>Acceso limitado con reglas más estrictas.</p>
+              </div>
+
+              <div class="ring-card green-ring">
+                <div class="ring-index green">3</div>
+                <h3 class="green">Usuario</h3>
+                <p>Aplicaciones con permisos mínimos y supervisión del kernel.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <div id="guideModal" class="modal">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h2>
+            <i data-lucide="book-open" class="icon modal-icon"></i>
+            ¿Cómo usar el simulador?
+          </h2>
+          <button id="closeGuideButton" type="button" class="ghost-button">
+            <i data-lucide="x" class="icon"></i>
+            <span>Cerrar</span>
+          </button>
+        </div>
+
+        <div class="step-list">
+          <div class="step-item">
+            <div class="step-icon"><i data-lucide="plus-square" class="icon"></i></div>
+            <div class="step-content">
+              <h3>Paso 1: crea segmentos</h3>
+              <p>Selecciona el tipo, define un nombre y un tamaño en KB. La memoria asigna cada bloque con un color distinto.</p>
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-icon"><i data-lucide="layout-grid" class="icon"></i></div>
+            <div class="step-content">
+              <h3>Paso 2: observa la fragmentación</h3>
+              <p>Al eliminar un segmento, el sistema deja huecos. Esa separación representa la fragmentación externa.</p>
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-icon"><i data-lucide="arrow-down-up" class="icon"></i></div>
+            <div class="step-content">
+              <h3>Paso 3: compacta la memoria</h3>
+              <p>Al presionar compactar, todos los segmentos se mueven hacia el inicio y el espacio libre conviene al final.</p>
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-icon"><i data-lucide="function-square" class="icon"></i></div>
+            <div class="step-content">
+              <h3>Paso 4: prueba la traducción</h3>
+              <p>En la pestaña de traducción, selecciona un segmento y un desplazamiento. La app calcula base + offset.</p>
+            </div>
+          </div>
+
+          <div class="step-item danger-step">
+            <div class="step-icon"><i data-lucide="alert-triangle" class="icon"></i></div>
+            <div class="step-content">
+              <h3>Paso 5: trap por violación de límite</h3>
+              <p>Si el desplazamiento supera el límite del segmento, aparece el mensaje “TRAP GENERADO”.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
