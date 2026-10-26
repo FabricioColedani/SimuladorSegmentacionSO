@@ -92,6 +92,13 @@ select option {
   backdrop-filter: blur(16px);
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
 .kicker {
   display: inline-flex;
   align-items: center;
@@ -748,6 +755,16 @@ select option {
   .topbar {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .header-actions {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .header-actions .utility-button {
+    width: 100%;
   }
 
   .title-wrap h1 {
